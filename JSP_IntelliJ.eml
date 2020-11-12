@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component inherit-compiler-output="true" jdk="adopt_openjdk_1.8" jdk_type="JavaSDK">
+	<output-test url="file://$MODULE_DIR$/out/test/JSP_IntelliJ"/>
+	<exclude-output/>
+	<contentEntry url="file://$MODULE_DIR$"/>
+	<lib name="servlet-api.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/lib/servlet-api.jar!/"/>
+	</lib>
+	<lib name="jsp-api.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/lib/jsp-api.jar!/"/>
+	</lib>
+	<levels>
+		<level name="JAX-WS-Apache Axis" value="project"/>
+		<level name="mysql-connector-java-8.0.22" value="project"/>
+	</levels>
+</component>
