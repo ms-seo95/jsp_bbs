@@ -2,7 +2,9 @@
     pageEncoding="UTF-8"%>
     
 <%@page import="java.io.PrintWriter"%>
-    
+<%@page import="bbs.Bbs"%>
+<%@page import="bbs.BbsDAO"%>
+
 <%
 	response.setHeader("Cache-Control", "no-cache");
 	response.setHeader("Cache-Control", "no-store");
@@ -18,18 +20,42 @@
 	<meta name="viewport" content="width=deivce-width", initial-scale="1">
 	<link rel="stylesheet" href="./css/bootstrap.css">
 	
-	<title>Write</title>
+	<title>Update</title>
 </head>
 <body>
 	<%
 		String userID = null;
-		if (session.getAttribute("userID") != null) {	// 로그인이 되어있는 경우
+		if (session.getAttribute("userID") != null) {
 			userID = (String) session.getAttribute("userID");
-		} else {    // 로그인이 되어있지 않을 경우
+		} else {
 			PrintWriter script = response.getWriter();
 			script.println("<script>");
 			script.println("alert('로그인이 필요합니다.')");
 			script.println("location.href = 'login.jsp'");
+			script.println("</script>");
+			script.flush();
+		}
+
+		// bbsID
+		int bbsID = 0;
+		if (request.getParameter("bbsID") != null) {	// 게시물이 존재하는 경우
+			bbsID = Integer.parseInt(request.getParameter("bbsID"));
+		}
+		if (bbsID == 0) {	//  게시물이 존재하지 않을 경우
+			PrintWriter script = response.getWriter();
+			script.println("<script>");
+			script.println("alert('존재하지 않는 게시물입니다.')");
+			script.println("location.href = 'bbs.jsp'");
+			script.println("</script>");
+			script.flush();
+		}
+
+		Bbs bbs = new BbsDAO().getBbs(bbsID);
+		if (!userID.equals(bbs.getUserID())) {
+			PrintWriter script = response.getWriter();
+			script.println("<script>");
+			script.println("alert('권한이 없습니다.')");
+			script.println("location.href = 'bbs.jsp'");
 			script.println("</script>");
 			script.flush();
 		}
@@ -55,28 +81,6 @@
 				<li><a href="main.jsp">메인</a></li>
 				<li class="active"><a href="bbs.jsp">게시판</a></li>
 			</ul>
-			
-			<!-- userID의 세션 값이 null일 경우에만 로그인 및 회원가입이 가능하게 설정 -->
-			<%
-				if (userID == null) {
-			%>
-			
-			<ul class="nav navbar-nav navbar-right">
-				<li class="dropdown">
-					<a href="#" class="dropdown-toggle"
-						data-toggle="dropdown" role="button" aria-haspopup="true"
-						aria-expanded="false">접속하기<span class="caret"></span></a>
-					<ul class="dropdown-menu">
-						<li><a href="login.jsp">로그인</a></li>
-						<li><a href="join.jsp">회원가입</a></li>
-					</ul>
-				</li>
-			</ul>
-			
-			<%		
-				} else {
-			%>
-			
 			<!-- 로그인이 되어있는 경우 회원관리라는 옵션을 넣어 보이게 함 -->	
 			<ul class="nav navbar-nav navbar-right">
 				<li class="dropdown">
@@ -88,32 +92,28 @@
 					</ul>
 				</li>
 			</ul>
-			
-			<%
-				}
-			%>
 		</div>
 	</nav>
 	
 	<div class="container">
 		<div class="row">
-			<form method="post" autocomplete="off" action="writeAction.jsp">
+			<form method="post" autocomplete="off" action="updateAction.jsp?bbsID=<%=bbsID%>">
 				<table class="table table-striped" style="text-align: center; border: 1px solid #dddddd;">
 					<thead>
 						<tr>
-							<th colspan="2" style="background-color: #eeeeee; text-align: center;">게시판 글쓰기 양식</th>
+							<th colspan="2" style="background-color: #eeeeee; text-align: center;">게시판 글 수정 양식</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
-							<td><input type="text" class="form-control" placeholder="글 제목" name="bbsTitle" maxlength="50"></td>
+							<td><input type="text" class="form-control" placeholder="글 제목" name="bbsTitle" maxlength="50" value=<%=bbs.getBbsTitle()%>></td>
 						</tr>
 						<tr>
-							<td><textarea class="form-control" placeholder="글 내용" name="bbsContent" maxlength="2048" style="height: 350px"></textarea></td>
+							<td><textarea class="form-control" placeholder="글 내용" name="bbsContent" maxlength="2048" style="height: 350px"><%=bbs.getBbsContent()%></textarea></td>
 						</tr>
 					</tbody>
 				</table>
-				<input type="submit" class="btn btn-primary pull-right" value="글쓰기 ">
+				<input type="submit" class="btn btn-primary pull-right" value="수정">
 			</form>
 		</div>
 	</div>

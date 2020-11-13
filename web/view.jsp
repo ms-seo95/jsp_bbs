@@ -1,9 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-
+    
+<%@page import="java.io.PrintWriter"%>
 <%@page import="bbs.Bbs"%>
 <%@page import="bbs.BbsDAO"%>
-<%@page import="java.util.ArrayList"%>
 
 <%
 	response.setHeader("Cache-Control", "no-cache");
@@ -19,30 +19,30 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<meta name="viewport" content="width=deivce-width", initial-scale="1">
 	<link rel="stylesheet" href="./css/bootstrap.css">
-
-	<%-- <a> 태그의 색상을 변경 --%>
-	<style type="text/css">
-		a, a:hover {
-			color: #000000;
-			text-decoration: none;
-		}
-	</style>
-
-	<title>BBS</title>
+	
+	<title>View</title>
 </head>
 <body>
 	<%
-		// userID
 		String userID = null;
-		if (session.getAttribute("userID") != null) {	// 로그인이 되어있는 경우
+		if (session.getAttribute("userID") != null) {
 			userID = (String) session.getAttribute("userID");
 		}
 
-		// page
-		int pageNumber = 1;
-		if (request.getParameter("pageNumber") != null) {
-			pageNumber = Integer.parseInt(request.getParameter("pageNumber"));
+		int bbsID = 0;
+		if (request.getParameter("bbsID") != null) {
+			bbsID = Integer.parseInt(request.getParameter("bbsID"));
 		}
+		if (bbsID == 0) {
+			PrintWriter script = response.getWriter();
+			script.println("<script>");
+			script.println("alert('유효하지 않은 글입니다.')");
+			script.println("location.href = 'bbs.jsp'");
+			script.println("</script>");
+			script.flush();
+		}
+
+		Bbs bbs = new BbsDAO().getBbs(bbsID);
 	%>
 
 	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
@@ -106,50 +106,41 @@
 	</nav>
 	
 	<div class="container">
-		<div class="row">
-			<table class="table table-striped" style="text-align: center; bolder: 1px solid #dddddd">
+		<div class="row"></div>
+			<table class="table table-striped" style="text-align: center; border: 1px solid #dddddd;">
 				<thead>
 					<tr>
-						<th style="background-color: #eeeeee; text-align: center;">번호</th>
-						<th style="background-color: #eeeeee; text-align: center;">제목</th>
-						<th style="background-color: #eeeeee; text-align: center;">작성자</th>
-						<th style="background-color: #eeeeee; text-align: center;">작성일</th>
+						<th colspan="3" style="background-color: #eeeeee; text-align: center;">게시판 글 보기</th>
 					</tr>
 				</thead>
 				<tbody>
-					<%
-						BbsDAO bbsDAO = new BbsDAO();
-						ArrayList<Bbs> list = bbsDAO.getList(pageNumber);
-
-						for (int i = 0; i < list.size(); i++) {
-							if (list.get(i).getBbsID() < 0) continue;	// 삭제한 게시글의 경우 표시X
-					%>
 					<tr>
-						<td style="background-color: #eeeeee; text-align: center;"><%=list.get(i).getBbsID()%></td>
-						<td style="background-color: #eeeeee; text-align: center;"><a href="view.jsp?bbsID=<%=list.get(i).getBbsID()%>"><%=list.get(i).getBbsTitle().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>")%></a></td>
-						<td style="background-color: #eeeeee; text-align: center;"><%=list.get(i).getUserID().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>")%></td>
-						<td style="background-color: #eeeeee; text-align: center;">
-							<%=list.get(i).getBbsDate().substring(0, 11) + list.get(i).getBbsDate().substring(11, 13) + "시" + list.get(i).getBbsDate().substring(14, 16) + "분"%>
-						</td>
+						<td style="width: 20%;">글 제목</td>
+						<td colspan="2"><%=bbs.getBbsTitle().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>")%></td>
 					</tr>
-					<%
-						}
-					%>
+					<tr>
+						<td>작성자</td>
+						<td colspan="2"><%=bbs.getUserID()%></td>
+					</tr>
+					<tr>
+						<td>작성일자</td>
+						<td colspan="2"><%=bbs.getBbsDate().substring(0, 11) + bbs.getBbsDate().substring(11, 13) + "시" + bbs.getBbsDate().substring(14, 16) + "분"%></td>
+					</tr>
+					<tr>
+						<td>내용</td>
+						<td colspan="2" style="min-height: 200px; text-align: left;"><%=bbs.getBbsContent().replaceAll(" ", "&nbsp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br>")%></td>
+					</tr>
 				</tbody>
 			</table>
+			<a href="bbs.jsp" class="btn btn-primary">목록</a>
 			<%
-				if (pageNumber != 1) {
+				if (userID != null && userID.equals(bbs.getUserID())) {
 			%>
-			<a href="bbs.jsp?pageNumber=<%=pageNumber - 1%>" class="btn btn-success btn-arrow-left">이전</a>
-			<%
-				} if (bbsDAO.nextPage(pageNumber + 1)) {
-			%>
-			<a href="bbs.jsp?pageNumber=<%=pageNumber + 1%>" class="btn btn-success btn-arrow-left">다음</a>
+			<a href="update.jsp?bbsID=<%=bbsID%>" class="btn btn-primary">수정</a>
+			<a onclick="return confirm('정말로 삭제하시겠습니까?')" href="deleteAction.jsp?bbsID=<%=bbsID%>" class="btn btn-primary">삭제</a>
 			<%
 				}
 			%>
-
-			<a href="write.jsp" class="btn btn-primary pull-right">글쓰기</a>
 		</div>
 	</div>
 	
