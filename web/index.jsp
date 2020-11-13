@@ -12,6 +12,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=deivce-width", initial-scale="1">
   <link rel="stylesheet" href="./css/bootstrap.css">
+  <link rel="stylesheet" href="./css/custom_font.css">
 
   <title>JSP 게시판 웹 사이트</title>
 </head>
